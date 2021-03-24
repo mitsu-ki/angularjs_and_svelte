@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja" ng-app="myApp">
+
+<head>
+  <meta charset="utf-8">
+  <title>Angularjs Component & svelte customElement</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <!-- Place favicon.ico in the root directory -->
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+</head>
+
+<body>
+  <h1>angularjsコンポーネントスタイル内で svelte customElement 使用するサンプル</h1>
+  <app></app>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.9/angular.min.js"></script>
+  <!-- svelteのバンドルファイル読み込み -->
+  <script src="./dist/main.js"></script>
+  <!-- angularjs component -->
+  <script>
+    !(function() {
+    'use strict';
+
+    angular.module('myApp', []).component('app', {
+      controller: AppCtrl,
+      template:
+        [
+          '<div style="border: red solid 1px;">',
+          '  <p>angularjs App component</p>',
+          '  <svelte-button text="my button" click="$ctrl.click()"></svelte-button>',
+          '</div>'
+        ].join('')
+    });
+
+    function AppCtrl() {
+      console.log("AppCtrl");
+
+      this.$onInit = function() {
+        console.log("$onInit")
+      }
+    }
+    AppCtrl.prototype.click = function() {
+      alert('clicked');
+    }
+  })();
+
+  </script>
+</body>
+</html>
