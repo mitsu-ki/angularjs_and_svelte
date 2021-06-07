@@ -10,7 +10,73 @@
 </head>
 
 <body>
+  <h1>angularjsコンポーネントスタイル内で svelte を使用するサンプル</h1>
+  <app></app>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.9/angular.min.js"></script>
   <!-- svelteのバンドルファイル読み込み -->
   <script src="./dist/main.js"></script>
+  <!-- angularjs component -->
+  <script>
+    !(function() {
+    'use strict';
+
+    angular.module('myApp', []).component('app', {
+      controller: [AppCtrl],
+      template:
+        '<div style="border: red solid 1px;">' +
+        '  <p>angularjs app component</p>' +
+        '  <children></children>' +
+        '</div>'
+    }).component('children', { // 子コンポーネントで svelte コンポーネントを使用してみる
+      controller: ['$scope', ChildrenCtrl],
+      template:
+        '<div style="border: blue solid 1px;">'+
+        '  <p>angularjs children component</p>'+
+        '  <input type="text"'+
+        '        ng-model="$ctrl.name" />'+
+        '  <div class="children_svelteGreeting"></div>'+
+        '  <p>click: {{$ctrl.count}}</p>'+
+        '  <div class="children_svelteButton"></div>'+
+        '</div>'
+    });
+
+    function AppCtrl() {
+    }
+
+    function ChildrenCtrl($scope) {
+      this.$scope = $scope;
+      this.$onInit = function() {
+        this.count = 0;
+
+        // svelte コンポーネントを追加: propsを外部で更新して変更されるか
+        // TODO: props で渡した値が親で更新されたときに反映する方法
+        new svelteGreeting({
+          target: document.querySelector('.children_svelteGreeting'),
+          props: {
+            name: this.name
+          }
+        })
+
+        // svelte コンポーネントを追加: 関数を渡して実行するパターン
+        new svelteButton({
+          target: document.querySelector('.children_svelteButton'),
+          props: {
+            buttonLabel: 'プラス1',
+            clickFn: this.click.bind(this)
+          }
+        })
+      }
+    }
+    ChildrenCtrl.prototype.click = function() {
+      // this.count++;
+      // svelteコンポーネントでのクリックを反映させるために $apply
+      this.$scope.$apply(function() {
+        this.count++;
+      }.bind(this))
+    }
+  })();
+
+  </script>
 </body>
 </html>
