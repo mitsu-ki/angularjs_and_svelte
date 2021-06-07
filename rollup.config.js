@@ -3,8 +3,10 @@ import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
 import livereload from "rollup-plugin-livereload";
 import { terser } from "rollup-plugin-terser";
+import { babel } from "@rollup/plugin-babel";
 
 const production = !process.env.ROLLUP_WATCH;
+const legacy = !!process.env.IS_LEGACY_BUILD;
 
 function serve() {
   let server;
@@ -59,6 +61,23 @@ export default {
       dedupe: ["svelte"],
     }),
     commonjs(),
+
+    // ror IE11 support
+    legacy &&
+      babel({
+        extensions: [".js", ".mjs", ".html", ".svelte"],
+        exclude: ["node_modules/@babel/**", "node_modules/core-js/**"],
+        presets: [
+          [
+            "@babel/preset-env",
+            {
+              targets: ["> 1%", "Last 2 versions", "IE >= 11"],
+              useBuiltIns: "usage",
+              corejs: 3,
+            },
+          ],
+        ],
+      }),
 
     // In dev mode, call `npm run start` once
     // the bundle has been generated
