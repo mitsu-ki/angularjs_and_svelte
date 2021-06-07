@@ -34,7 +34,8 @@
         '<div style="border: blue solid 1px;">'+
         '  <p>angularjs children component</p>'+
         '  <input type="text"'+
-        '        ng-model="$ctrl.name" />'+
+        '         ng-change="$ctrl.changeName()"' +
+        '         ng-model="$ctrl.name" />'+
         '  <div class="children_svelteGreeting"></div>'+
         '  <p>click: {{$ctrl.count}}</p>'+
         '  <div class="children_svelteButton"></div>'+
@@ -51,7 +52,7 @@
 
         // svelte コンポーネントを追加: propsを外部で更新して変更されるか
         // TODO: props で渡した値が親で更新されたときに反映する方法
-        new svelteGreeting({
+        this.svelteGreeting = new svelteGreeting({
           target: document.querySelector('.children_svelteGreeting'),
           props: {
             name: this.name
@@ -74,6 +75,14 @@
       this.$scope.$apply(function() {
         this.count++;
       }.bind(this))
+    }
+    ChildrenCtrl.prototype.changeName = function() {
+      // svelte コンポーネントの props を更新
+      // $inject_state は devtoolなので使用しないように注意
+      // https://twitter.com/sveltejs/status/1203024631390715912
+      // >> Same answer for `app.$inject_state`? Why does that exist, since it's exactly the same as `app.$set`?
+      // > That's another dev mode hook, used for hot module reloading
+      this.svelteGreeting.$$set({name: this.name});
     }
   })();
 
