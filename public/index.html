@@ -22,11 +22,13 @@
     'use strict';
 
     angular.module('myApp', []).component('app', {
-      controller: [AppCtrl],
+      controller: ['$scope', AppCtrl],
       template:
         '<div style="border: red solid 1px;">' +
         '  <p>angularjs app component</p>' +
         '  <children></children>' +
+        '  <div ng-if="!!$ctrl.isShowComment">{{$ctrl.comment}}</div>' +
+        '  <button type="button" ng-click="$ctrl.reset()">RESET</button>' +
         '</div>'
     }).component('children', { // 子コンポーネントで svelte コンポーネントを使用してみる
       controller: ['$scope', ChildrenCtrl],
@@ -39,10 +41,34 @@
         '  <div class="children_svelteGreeting"></div>'+
         '  <p>click: {{$ctrl.count}}</p>'+
         '  <div class="children_svelteButton"></div>'+
+        '  <div class="children_svelteCustomEvent"></div>'+
         '</div>'
     });
 
-    function AppCtrl() {
+    function AppCtrl($scope) {
+      var commentFn = this.comment.bind(this);
+
+      this.$scope = $scope;
+      this.$onInit = function() {
+        this.comment = "Initialized comment";
+        document.addEventListener('svelte:showComment', commentFn);
+      }
+
+      this.$onDestroy = function() {
+        document.removeEventListener('svelte:showComment', commentFn);
+      };
+    }
+
+    AppCtrl.prototype.comment = function(e) {
+      this.$scope.$apply(function() {
+        this.isShowComment = true;
+        this.comment = e.detail.text;
+      }.bind(this))
+    }
+
+    AppCtrl.prototype.reset = function() {
+      this.isShowComment = false;
+      this.comment = null;
     }
 
     function ChildrenCtrl($scope) {
@@ -66,6 +92,11 @@
             buttonLabel: 'プラス1',
             clickFn: this.click.bind(this)
           }
+        })
+
+        // CustomEvent で親より上とコミュニケーションするサンプル
+        new svelteCustomEvent({
+          target: document.querySelector('.children_svelteCustomEvent'),
         })
       }
     }
